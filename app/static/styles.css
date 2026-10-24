@@ -1,0 +1,72 @@
+/* Design goal: usable by someone unfamiliar with technology.
+   Large text, high contrast, one obvious action per screen. */
+
+:root {
+  --text: #111;
+  --muted: #444;
+  --bg: #fff;
+  --surface: #f4f5f7;
+  --primary: #0b4f9c;
+  --pass: #11683a;
+  --fail: #b3261e;
+  --review: #8a5a00;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 20px; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.site-header {
+  background: var(--primary);
+  padding: 0.75rem 1rem;
+}
+
+.site-title {
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+h1 { font-size: 2rem; margin: 0 0 0.5rem; }
+
+.lead { font-size: 1.15rem; color: var(--muted); }
+
+.notice {
+  background: var(--surface);
+  border-left: 6px solid var(--primary);
+  padding: 1rem;
+  border-radius: var(--radius);
+}
+
+button, .button {
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 0.9rem 1.6rem;
+  min-height: 56px;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible {
+  outline: 4px solid #f2b700;
+  outline-offset: 2px;
+}
