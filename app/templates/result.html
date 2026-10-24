@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% set labels = {"pass": "Pass", "fail": "Fail", "review": "Needs review"} %}
+{% set icons = {"pass": "✓", "fail": "✗", "review": "?"} %}
+{% block title %}{{ labels[result.status.value] }} · Label Verifier{% endblock %}
+{% block content %}
+
+<section class="verdict verdict-{{ result.status.value }}" role="status">
+  <span class="verdict-icon" aria-hidden="true">{{ icons[result.status.value] }}</span>
+  <div>
+    <h1>{{ labels[result.status.value] }}</h1>
+    <p>{{ result.summary }}</p>
+  </div>
+</section>
+
+<div class="result-layout">
+  <table class="fields">
+    <thead>
+      <tr><th scope="col">Item</th><th scope="col">Application</th><th scope="col">Label</th><th scope="col">Result</th></tr>
+    </thead>
+    <tbody>
+      {% for f in result.fields %}
+      <tr class="row-{{ f.status.value }}">
+        <th scope="row">{{ f.field }}</th>
+        <td>{{ f.expected or "—" }}</td>
+        <td>{{ f.found or "Not found" }}</td>
+        <td>
+          <span class="badge badge-{{ f.status.value }}">{{ icons[f.status.value] }} {{ labels[f.status.value] }}</span>
+          <div class="reason">{{ f.reason }}</div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <figure class="label-preview">
+    <img src="{{ image_data_url }}" alt="Uploaded label{% if filename %}: {{ filename }}{% endif %}">
+    <figcaption>{{ filename }}</figcaption>
+  </figure>
+</div>
+
+<p class="hint">Checked in {{ result.elapsed_seconds }} seconds.</p>
+
+<a class="button primary-action" href="/">Check another label</a>
+{% endblock %}
