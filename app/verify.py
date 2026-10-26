@@ -54,7 +54,11 @@ async def verify_label(
 
     summary = _SUMMARIES[status]
     if not label.image_legible:
-        summary = "The picture is hard to read, so a person should check it. " + (label.notes or "")
+        detail = f" {label.notes}" if label.notes else ""
+        if status == Status.FAIL:
+            summary += f" The picture was also hard to read, so confirm the red rows by eye.{detail}"
+        else:
+            summary = f"The picture is hard to read, so a person should check it.{detail}"
 
     return VerificationResult(
         status=status,

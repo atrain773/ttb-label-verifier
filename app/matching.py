@@ -75,21 +75,30 @@ def compare_text(field: str, expected: str, found: str | None) -> FieldResult:
 
 # --- Alcohol content -------------------------------------------------------
 
-_PERCENT_RE = re.compile(r"(\d+(?:\.\d+)?)\s*%")
-_PROOF_RE = re.compile(r"(\d+(?:\.\d+)?)\s*(?:°\s*)?proof", re.IGNORECASE)
-_NUMBER_RE = re.compile(r"(\d+(?:\.\d+)?)")
+# A number as printed on a label: "750", "13.5", European "13,5", or "1,750" with a thousands comma.
+_NUM = r"\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:[.,]\d+)?"
+_PERCENT_RE = re.compile(rf"({_NUM})\s*%")
+_PROOF_RE = re.compile(rf"({_NUM})\s*(?:°\s*)?proof", re.IGNORECASE)
+_NUMBER_RE = re.compile(rf"({_NUM})")
+
+
+def to_number(text: str) -> float:
+    """'1,750' -> 1750 (comma + three digits is a thousands separator); '13,5' -> 13.5 (decimal comma)."""
+    if re.fullmatch(r"\d{1,3}(?:,\d{3})+(?:\.\d+)?", text):
+        return float(text.replace(",", ""))
+    return float(text.replace(",", "."))
 
 
 def parse_abv(value: str) -> tuple[float | None, float | None]:
     """Return (abv_percent, proof) from strings like '45% Alc./Vol. (90 Proof)'."""
     percent = _PERCENT_RE.search(value)
     proof = _PROOF_RE.search(value)
-    abv = float(percent.group(1)) if percent else None
-    proof_value = float(proof.group(1)) if proof else None
+    abv = to_number(percent.group(1)) if percent else None
+    proof_value = to_number(proof.group(1)) if proof else None
     if abv is None and proof_value is None:
         # Bare number typed into the application form, e.g. "45".
         bare = _NUMBER_RE.search(value)
-        abv = float(bare.group(1)) if bare else None
+        abv = to_number(bare.group(1)) if bare else None
     if abv is None and proof_value is not None:
         abv = proof_value / 2
     return abv, proof_value
@@ -147,7 +156,7 @@ _UNIT_ALIASES = {
     "l": "l", "liter": "l", "liters": "l", "litre": "l", "litres": "l", "ltr": "l",
     "floz": "floz", "fluidounce": "floz", "fluidounces": "floz", "oz": "floz",
 }
-_VOLUME_RE = re.compile(r"(\d+(?:[.,]\d+)?)\s*([a-z][a-z.\s]*)", re.IGNORECASE)
+_VOLUME_RE = re.compile(rf"({_NUM})\s*([a-z][a-z.\s]*)", re.IGNORECASE)
 
 # Relative tolerance for unit conversions (e.g. 25.4 fl oz vs 750 mL is ~0.2% apart).
 VOLUME_TOLERANCE = 0.005
@@ -160,7 +169,7 @@ def parse_volume_ml(value: str) -> float | None:
         # Take the longest alias the unit text starts with ("fl oz" before "l").
         for alias in sorted(_UNIT_ALIASES, key=len, reverse=True):
             if unit_key.startswith(alias):
-                return float(number.replace(",", ".")) * _ML_PER_UNIT[_UNIT_ALIASES[alias]]
+                return to_number(number) * _ML_PER_UNIT[_UNIT_ALIASES[alias]]
     return None
 
 

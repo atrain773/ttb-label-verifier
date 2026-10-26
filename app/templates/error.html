@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}{{ "Not found" if status_code == 404 else "Problem" }} · Label Verifier{% endblock %}
+{% block content %}
+<h1>{{ "Page not found" if status_code == 404 else "Something went wrong" }}</h1>
+<div class="alert" role="alert">{{ message }}</div>
+<p>
+  <a class="button primary-action" href="/">Check a label</a>
+</p>
+<p class="hint"><a href="/batch">Check many labels</a></p>
+{% endblock %}

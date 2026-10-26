@@ -6,25 +6,67 @@ import time
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import ValidationError
 from starlette.concurrency import run_in_threadpool
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app import batch
 from app.config import get_settings
-from app.extraction import ExtractionError, Extractor, get_extractor
-from app.images import ImageError, prepare_image
-from app.models import ApplicationData
+from app.extraction import ExtractionError, Extractor, get_batch_extractor, get_extractor
+from app.images import ImageError, prepare_image, read_upload
+from app.models import ApplicationData, missing_fields_message
 from app.verify import verify_label
 
 BASE_DIR = Path(__file__).resolve().parent
 
-app = FastAPI(title="TTB Label Verifier")
+# Interactive API docs are off: this is an agent-facing web app, not a public API.
+app = FastAPI(title="TTB Label Verifier", docs_url=None, redoc_url=None, openapi_url=None)
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 # Changes on every deploy, so browsers fetch the new stylesheet instead of a cached old one.
 templates.env.globals["asset_version"] = str(int(time.time()))
+
+SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+    # Inline scripts are small and our own; images include the inline preview of the uploaded label.
+    "Content-Security-Policy": (
+        "default-src 'self'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; "
+        "style-src 'self'; frame-ancestors 'none'; form-action 'self'"
+    ),
+}
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers.update(SECURITY_HEADERS)
+    return response
+
+
+def _error_page(request: Request, status_code: int, message: str):
+    return templates.TemplateResponse(
+        request, "error.html", {"status_code": status_code, "message": message}, status_code=status_code
+    )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_error_page(request: Request, exc: StarletteHTTPException):
+    """Agents should see a readable page with a way back, never raw JSON."""
+    message = exc.detail if exc.status_code == 404 and exc.detail != "Not Found" else None
+    if message is None:
+        message = "That page doesn't exist." if exc.status_code == 404 else "Something went wrong."
+    return _error_page(request, exc.status_code, message)
+
+
+@app.exception_handler(RequestValidationError)
+async def request_error_page(request: Request, exc: RequestValidationError):
+    return _error_page(request, 422, "Some required information was missing. Please go back and fill in every field.")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -44,27 +86,31 @@ async def verify(
     country_of_origin: str = Form(""),
     extractor: Extractor = Depends(get_extractor),
 ):
-    app_data = ApplicationData(
-        brand_name=brand_name,
-        class_type=class_type,
-        alcohol_content=alcohol_content,
-        net_contents=net_contents,
-        bottler_name_address=bottler_name_address,
-        country_of_origin=country_of_origin,
-    )
+    form = {
+        "brand_name": brand_name,
+        "class_type": class_type,
+        "alcohol_content": alcohol_content,
+        "net_contents": net_contents,
+        "bottler_name_address": bottler_name_address,
+        "country_of_origin": country_of_origin,
+    }
+
+    def form_error(message: str):
+        # Re-show the form with the agent's typing preserved, so they only fix what's wrong.
+        return templates.TemplateResponse(request, "index.html", {"form": form, "error": message}, status_code=422)
+
+    try:
+        app_data = ApplicationData(**form)
+    except ValidationError as exc:
+        return form_error(missing_fields_message(exc))
 
     started = time.perf_counter()
     try:
-        image_jpeg = prepare_image(await label_image.read())
+        # Resizing is CPU work; run it off the event loop so other agents' requests keep moving.
+        image_jpeg = await run_in_threadpool(prepare_image, await read_upload(label_image))
         result = await verify_label(app_data, image_jpeg, extractor, started=started)
     except (ImageError, ExtractionError) as exc:
-        # Re-show the form with the agent's typing preserved, so they only fix what's wrong.
-        return templates.TemplateResponse(
-            request,
-            "index.html",
-            {"form": app_data.model_dump(), "error": str(exc)},
-            status_code=422,
-        )
+        return form_error(str(exc))
 
     # The image is shown back inline and never written to disk (prototype: no data retention).
     image_data_url = "data:image/jpeg;base64," + base64.b64encode(image_jpeg).decode("ascii")
@@ -94,7 +140,7 @@ async def batch_start(
     request: Request,
     applications_csv: UploadFile,
     label_images: list[UploadFile] = File(...),
-    extractor: Extractor = Depends(get_extractor),
+    extractor: Extractor = Depends(get_batch_extractor),
 ):
     def form_error(message: str):
         return templates.TemplateResponse(
@@ -118,8 +164,12 @@ async def batch_start(
     # Shrink each image as it arrives so a few hundred phone photos never sit in memory at full size.
     prepared: dict[str, bytes | str] = {}
     for upload in images:
+        if upload.filename in prepared:
+            # Two pictures with one name can't both match a CSV row; flag it rather than silently keep one.
+            prepared[upload.filename] = "Two pictures share this filename. Rename one and check it separately."
+            continue
         try:
-            prepared[upload.filename] = await run_in_threadpool(prepare_image, await upload.read())
+            prepared[upload.filename] = await run_in_threadpool(prepare_image, await read_upload(upload))
         except ImageError as exc:
             prepared[upload.filename] = str(exc)
 
