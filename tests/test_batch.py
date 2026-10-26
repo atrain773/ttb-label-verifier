@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from PIL import Image
 
 from app import batch
-from app.extraction import ExtractionError, get_extractor
+from app.extraction import ExtractionError, get_batch_extractor
 from app.main import app
 from app.models import ApplicationData, ExtractedLabel
 from app.warning import STANDARD_WARNING
@@ -152,7 +152,7 @@ def wait_until_done(client, job_url: str, timeout: float = 5.0) -> str:
 
 def test_batch_end_to_end(client):
     wrong_abv = LABEL.model_copy(update={"alcohol_content": "40% Alc./Vol."})
-    app.dependency_overrides[get_extractor] = lambda: FakeExtractor([LABEL, wrong_abv])
+    app.dependency_overrides[get_batch_extractor] = lambda: FakeExtractor([LABEL, wrong_abv])
     files = [
         ("applications_csv", ("apps.csv", (HEADER + "a.png," + GOOD + "b.png," + GOOD).encode(), "text/csv")),
         ("label_images", ("a.png", png_bytes(), "image/png")),

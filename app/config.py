@@ -20,8 +20,11 @@ class Settings(BaseSettings):
     extraction_model: str = "claude-sonnet-5-5"  # chosen from docs/eval_results.md
     # Lower effort = less model thinking = faster responses. Label transcription is a simple task.
     extraction_effort: str = "low"
-    # Hard ceiling per label; the target is ~5 seconds.
-    extraction_timeout_seconds: float = 20.0
+    # Hard ceiling per single-label attempt. The slowest measured read was 4.6s; an agent
+    # should get an answer or a "try again" message quickly, not wait half a minute.
+    extraction_timeout_seconds: float = 8.0
+    # Batch rows can wait longer, since no one is watching a single row.
+    batch_timeout_seconds: float = 20.0
     # Labels checked at once in a batch. Bounded by the API account's rate limit.
     batch_concurrency: int = 5
 

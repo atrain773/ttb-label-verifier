@@ -9,12 +9,13 @@ import csv
 import io
 import time
 import uuid
+import weakref
 from dataclasses import dataclass, field
 
 from pydantic import ValidationError
 
 from app.extraction import ExtractionError, Extractor
-from app.models import ApplicationData, Status, VerificationResult
+from app.models import ApplicationData, Status, VerificationResult, missing_fields_message
 from app.verify import verify_label
 
 MAX_BATCH_FILES = 300
@@ -73,6 +74,17 @@ class BatchJob:
 
 _jobs: dict[str, BatchJob] = {}
 
+# One limit shared by every running batch, so three agents uploading at once don't triple
+# the request rate and trip the API's rate limit. Keyed by event loop (one per server process).
+_limits: "weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, asyncio.Semaphore]" = weakref.WeakKeyDictionary()
+
+
+def _shared_limit(concurrency: int) -> asyncio.Semaphore:
+    loop = asyncio.get_running_loop()
+    if loop not in _limits:
+        _limits[loop] = asyncio.Semaphore(concurrency)
+    return _limits[loop]
+
 
 def _normalize_header(name: str) -> str:
     return "_".join(name.strip().lower().replace("/", " ").split())
@@ -112,8 +124,8 @@ def parse_applications(csv_bytes: bytes) -> dict[str, ApplicationData | str]:
             continue
         try:
             applications[key] = ApplicationData(**{c: row.get(c, "") for c in REQUIRED_COLUMNS[1:] + OPTIONAL_COLUMNS})
-        except ValidationError:
-            applications[key] = f"CSV row {line_number} could not be read."
+        except ValidationError as exc:
+            applications[key] = f"CSV row {line_number}: {missing_fields_message(exc)}"
     if not applications:
         raise BatchInputError("The CSV has no rows.")
     return applications
@@ -171,8 +183,8 @@ def _expire_old_jobs() -> None:
 
 
 async def run_job(job: BatchJob, extractor: Extractor, concurrency: int) -> None:
-    """Check every pending row, at most `concurrency` at a time. Never raises."""
-    limit = asyncio.Semaphore(concurrency)
+    """Check every pending row; across all running batches, at most `concurrency` at a time. Never raises."""
+    limit = _shared_limit(concurrency)
 
     async def check(row: BatchRow) -> None:
         async with limit:

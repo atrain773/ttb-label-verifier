@@ -134,6 +134,7 @@ async def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--models", nargs="+", default=DEFAULT_MODELS)
     parser.add_argument("--runs", type=int, default=3)
+    parser.add_argument("--report", type=Path, default=REPORT_PATH, help="where to write the markdown report")
     args = parser.parse_args()
 
     labels = json.loads((LABEL_DIR / "answer_key.json").read_text())
@@ -144,8 +145,8 @@ async def main() -> None:
     results = await asyncio.gather(*(run_model(m, labels, images, args.runs, client) for m in args.models))
     rows = [r for model_rows in results for r in model_rows]
 
-    REPORT_PATH.write_text(summarize(rows, labels, args.models))
-    print(f"\nReport written to {REPORT_PATH}")
+    args.report.write_text(summarize(rows, labels, args.models))
+    print(f"\nReport written to {args.report}")
 
 
 if __name__ == "__main__":

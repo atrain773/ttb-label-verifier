@@ -208,3 +208,13 @@ table.fields thead th { background: var(--surface); }
 .batch-table th[scope="row"] { word-break: break-all; font-weight: 600; }
 .problems { margin: 0; padding-left: 1.1rem; }
 .problems li { margin-bottom: 0.25rem; }
+
+/* On phones the results table stacks, hiding the column headings; tag each value instead
+   so the application value and the label value can't be confused. */
+@media (max-width: 640px) {
+  table.fields td[data-label]::before {
+    content: attr(data-label) ": ";
+    font-weight: 600;
+    color: var(--muted);
+  }
+}
