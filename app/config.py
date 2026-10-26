@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     extraction_effort: str = "low"
     # Hard ceiling per label; the target is ~5 seconds.
     extraction_timeout_seconds: float = 20.0
+    # Labels checked at once in a batch. Bounded by the API account's rate limit.
+    batch_concurrency: int = 5
 
 
 @lru_cache

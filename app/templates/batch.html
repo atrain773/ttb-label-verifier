@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Check many labels · Label Verifier{% endblock %}
+{% block content %}
+<h1>Check many labels</h1>
+<p class="lead">
+  For large submissions. Upload all the label pictures and one spreadsheet (CSV) with
+  what each application says. Results appear as each label is checked.
+</p>
+
+{% if error %}
+<div class="alert" role="alert">
+  <strong>Something went wrong:</strong> {{ error }}
+</div>
+{% endif %}
+
+<form class="verify-form" action="/batch" method="post" enctype="multipart/form-data">
+  <fieldset>
+    <legend><span class="step">1</span> Application spreadsheet</legend>
+    <p class="example">
+      One row per label. The <strong>filename</strong> column must match each picture's file name.
+      <a href="/batch/template.csv">Download a blank template</a>.
+    </p>
+    <label for="applications_csv">Choose the CSV file</label>
+    <input id="applications_csv" name="applications_csv" type="file" accept=".csv,text/csv" required>
+  </fieldset>
+
+  <fieldset>
+    <legend><span class="step">2</span> Label pictures</legend>
+    <p class="example">Select all the pictures at once (up to {{ max_files }}). Hold Shift or Cmd to pick several.</p>
+    <label for="label_images">Choose the label images</label>
+    <input id="label_images" name="label_images" type="file" accept="image/*" multiple required>
+    <p class="hint" id="file_count" aria-live="polite"></p>
+  </fieldset>
+
+  <button type="submit" class="primary-action">Check all labels</button>
+  <p class="hint" id="working" hidden>Uploading pictures. Large batches can take a minute…</p>
+</form>
+
+<p class="hint"><a href="/">Back to checking one label</a></p>
+
+<script>
+  document.getElementById("label_images").addEventListener("change", function () {
+    var n = this.files.length;
+    document.getElementById("file_count").textContent = n + (n === 1 ? " picture selected." : " pictures selected.");
+  });
+  document.querySelector(".verify-form").addEventListener("submit", function () {
+    var button = this.querySelector("button");
+    button.disabled = true;
+    button.textContent = "Uploading…";
+    document.getElementById("working").hidden = false;
+  });
+</script>
+{% endblock %}
