@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env", extra="ignore")
 
     anthropic_api_key: str = ""
-    extraction_model: str = "claude-opus-5-5"
+    extraction_model: str = "claude-sonnet-5-5"  # chosen from docs/eval_results.md
     # Lower effort = less model thinking = faster responses. Label transcription is a simple task.
     extraction_effort: str = "low"
     # Hard ceiling per label; the target is ~5 seconds.

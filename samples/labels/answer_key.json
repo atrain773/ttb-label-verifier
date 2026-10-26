@@ -1,0 +1,204 @@
+{
+  "01_clean.png": {
+    "description": "Clean label, everything correct.",
+    "distortions": [],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "45% Alc./Vol. (90 Proof)",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  },
+  "02_wrong_abv.png": {
+    "description": "ABV on label differs from application.",
+    "distortions": [],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "40% Alc./Vol. (80 Proof)",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  },
+  "03_proof_mismatch.png": {
+    "description": "Proof is not twice the ABV.",
+    "distortions": [],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "45% Alc./Vol. (80 Proof)",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  },
+  "04_title_case_warning.png": {
+    "description": "Warning header in title case.",
+    "distortions": [],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "45% Alc./Vol. (90 Proof)",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "Government Warning: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  },
+  "05_warning_not_bold.png": {
+    "description": "Warning header not bold.",
+    "distortions": [],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "45% Alc./Vol. (90 Proof)",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": false
+  },
+  "06_warning_reworded.png": {
+    "description": "Warning body reworded.",
+    "distortions": [],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "45% Alc./Vol. (90 Proof)",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and can cause health issues.",
+    "warning_header_appears_bold": true
+  },
+  "07_missing_net_contents.png": {
+    "description": "Net contents missing from label.",
+    "distortions": [],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "45% Alc./Vol. (90 Proof)",
+    "net_contents": null,
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  },
+  "08_stones_throw.png": {
+    "description": "Different brand, mixed-case apostrophe brand name.",
+    "distortions": [],
+    "brand_name": "STONE'S THROW",
+    "class_type": "London Dry Gin",
+    "alcohol_content": "47% Alc./Vol. (94 Proof)",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Distilled and Bottled by Stone's Throw Spirits, Portland, OR",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  },
+  "09_fluid_ounces.png": {
+    "description": "Net contents in US fluid ounces.",
+    "distortions": [],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "45% Alc./Vol. (90 Proof)",
+    "net_contents": "25.4 FL. OZ.",
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  },
+  "10_tiny_warning.png": {
+    "description": "Warning printed in very small type.",
+    "distortions": [],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "45% Alc./Vol. (90 Proof)",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  },
+  "11_import_wine.png": {
+    "description": "Imported wine with country of origin.",
+    "distortions": [],
+    "brand_name": "Château Belle Rive",
+    "class_type": "Bordeaux Red Wine",
+    "alcohol_content": "13.5% Alc. by Vol.",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Imported by Rive Imports LLC, New York, NY",
+    "country_of_origin": "Product of France",
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  },
+  "12_blurred.png": {
+    "description": "Out-of-focus photo.",
+    "distortions": [
+      "blur"
+    ],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "45% Alc./Vol. (90 Proof)",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  },
+  "13_rotated.png": {
+    "description": "Photo taken at an angle.",
+    "distortions": [
+      "rotate"
+    ],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "45% Alc./Vol. (90 Proof)",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  },
+  "14_glare.png": {
+    "description": "Bright glare across the label.",
+    "distortions": [
+      "glare"
+    ],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "45% Alc./Vol. (90 Proof)",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  },
+  "15_low_resolution.png": {
+    "description": "Very low resolution image.",
+    "distortions": [
+      "low_res"
+    ],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "45% Alc./Vol. (90 Proof)",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  },
+  "16_dim_lighting.png": {
+    "description": "Dark, low-contrast photo.",
+    "distortions": [
+      "dim"
+    ],
+    "brand_name": "OLD TOM DISTILLERY",
+    "class_type": "Kentucky Straight Bourbon Whiskey",
+    "alcohol_content": "45% Alc./Vol. (90 Proof)",
+    "net_contents": "750 mL",
+    "bottler_name_address": "Bottled by Old Tom Distillery, Bardstown, KY",
+    "country_of_origin": null,
+    "government_warning_text": "GOVERNMENT WARNING: (1) According to the Surgeon General, women should not drink alcoholic beverages during pregnancy because of the risk of birth defects. (2) Consumption of alcoholic beverages impairs your ability to drive a car or operate machinery, and may cause health problems.",
+    "warning_header_appears_bold": true
+  }
+}
