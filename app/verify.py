@@ -5,6 +5,7 @@ import time
 from app.extraction import Extractor
 from app.matching import compare_abv, compare_net_contents, compare_text
 from app.models import ApplicationData, ExtractedLabel, FieldResult, Status, VerificationResult
+from app.warning import check_government_warning
 
 _SUMMARIES = {
     Status.PASS: "Everything we checked matches the application.",
@@ -25,6 +26,8 @@ def compare_fields(app_data: ApplicationData, label: ExtractedLabel) -> list[Fie
         results.append(compare_text("Bottler name and address", app_data.bottler_name_address, label.bottler_name_address))
     if app_data.country_of_origin.strip():
         results.append(compare_text("Country of origin", app_data.country_of_origin, label.country_of_origin))
+    # Mandatory on every label, checked against the legal text rather than the application.
+    results.append(check_government_warning(label.government_warning_text, label.warning_header_appears_bold))
     return results
 
 

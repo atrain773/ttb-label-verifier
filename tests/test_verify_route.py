@@ -9,6 +9,7 @@ from PIL import Image
 from app.extraction import ExtractionError, UnconfiguredExtractor, get_extractor
 from app.main import app
 from app.models import ExtractedLabel
+from app.warning import STANDARD_WARNING
 
 GOOD_LABEL = ExtractedLabel(
     image_legible=True,
@@ -16,6 +17,8 @@ GOOD_LABEL = ExtractedLabel(
     class_type="Kentucky Straight Bourbon Whiskey",
     alcohol_content="45% Alc./Vol. (90 Proof)",
     net_contents="750 mL",
+    government_warning_text=STANDARD_WARNING,
+    warning_header_appears_bold=True,
 )
 
 FORM = {
@@ -69,6 +72,14 @@ def test_wrong_abv_fails(client):
     response = post(client)
     assert "<h1>Fail</h1>" in response.text
     assert "Label says 40%" in response.text
+
+
+def test_title_case_warning_fails_whole_label(client):
+    bad = STANDARD_WARNING.replace("GOVERNMENT WARNING:", "Government Warning:")
+    use_extractor(FakeExtractor(GOOD_LABEL.model_copy(update={"government_warning_text": bad})))
+    response = post(client)
+    assert "<h1>Fail</h1>" in response.text
+    assert "all capital letters" in response.text
 
 
 def test_illegible_image_needs_review(client):
