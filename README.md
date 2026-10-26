@@ -4,8 +4,9 @@
 
 A prototype that helps TTB compliance agents check alcohol label artwork against the application. An agent uploads the label picture and types what the application says, and a few seconds later gets **Pass**, **Fail**, or **Needs Review**, with a plain-English reason for each field.
 
-**Live app:** https://ttb-label-verifier-38lh.onrender.com
-**Assignment:** [docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md)
+- **Live app:** https://ttb-label-verifier-38lh.onrender.com
+- **One-page summary of approach, tools, and assumptions:** [docs/APPROACH.md](docs/APPROACH.md)
+- **Assignment:** [docs/PROJECT_BRIEF.md](docs/PROJECT_BRIEF.md)
 
 > The app runs on Render's free plan, which sleeps after ~15 minutes idle. If the first page load takes 30–60 seconds, that is the server waking up. Label checks are fast after that.
 
