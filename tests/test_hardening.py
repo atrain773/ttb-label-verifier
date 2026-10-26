@@ -97,7 +97,7 @@ def test_decimal_comma_in_imports():
 # --- Input validation ----------------------------------------------------------
 
 
-@pytest.mark.parametrize("bad", ["   ", "!!!", "--"])
+@pytest.mark.parametrize("bad", ["", "   ", "!!!", "--"])
 def test_blank_or_punctuation_field_is_rejected_with_named_field(client, bad):
     app.dependency_overrides[get_extractor] = lambda: FakeExtractor()
     response = client.post(
@@ -107,7 +107,7 @@ def test_blank_or_punctuation_field_is_rejected_with_named_field(client, bad):
     )
     assert response.status_code == 422
     assert "Please fill in: Brand name." in response.text
-    assert 'value="Old Tom Distillery"' not in response.text or bad  # form re-shown
+    assert 'value="Kentucky Straight Bourbon Whiskey"' in response.text  # form re-shown with the agent's input
 
 
 def test_batch_row_with_punctuation_only_field_names_the_problem():

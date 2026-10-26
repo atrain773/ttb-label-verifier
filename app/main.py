@@ -78,10 +78,12 @@ def index(request: Request):
 async def verify(
     request: Request,
     label_image: UploadFile,
-    brand_name: str = Form(...),
-    class_type: str = Form(...),
-    alcohol_content: str = Form(...),
-    net_contents: str = Form(...),
+    # Defaults of "" (not required) so empty fields reach ApplicationData's validation,
+    # which re-shows the form naming the field, instead of a generic error page.
+    brand_name: str = Form(""),
+    class_type: str = Form(""),
+    alcohol_content: str = Form(""),
+    net_contents: str = Form(""),
     bottler_name_address: str = Form(""),
     country_of_origin: str = Form(""),
     extractor: Extractor = Depends(get_extractor),

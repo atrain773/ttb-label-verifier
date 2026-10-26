@@ -21,9 +21,9 @@
       {% for f in result.fields %}
       <tr class="row-{{ f.status.value }}">
         <th scope="row">{{ f.field }}</th>
-        <td>{{ f.expected or "—" }}</td>
-        <td>{{ f.found or "Not found" }}</td>
-        <td>
+        <td data-label="Application">{{ f.expected or "—" }}</td>
+        <td data-label="Label">{{ f.found or "Not found" }}</td>
+        <td data-label="Result">
           <span class="badge badge-{{ f.status.value }}">{{ icons[f.status.value] }} {{ labels[f.status.value] }}</span>
           <div class="reason">{{ f.reason }}</div>
         </td>
