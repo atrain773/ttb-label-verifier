@@ -11,5 +11,3 @@ services:
         value: 3.12.11
       - key: ANTHROPIC_API_KEY
         sync: false
-      - key: EXTRACTION_MODEL
-        value: claude-opus-5-5
