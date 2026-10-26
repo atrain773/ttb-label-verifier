@@ -100,7 +100,7 @@ On the deployed app, the reading step takes 2.0–2.3s; end-to-end from a home c
 
 **Latency varies with API load.** A later re-run of the same labels saw a 2.9–3.1s median but occasional spikes to 9–14s. To keep an agent from waiting on a spike, a single-label read gives up after 8 seconds and retries once, and the agent sees "try again" rather than a long hang. Batch rows allow 20 seconds and more retries, because no one is waiting on a single row.
 
-Full report: [docs/eval_results.md](docs/eval_results.md). Re-run with `python scripts/eval_extraction.py` (144 API calls across three models, about $1.50).
+Full report: [docs/eval_results.md](docs/eval_results.md). To check for regressions, run `python scripts/eval_extraction.py`, which tests only the app's model (48 calls, about $0.45). Re-running the three-model comparison is one flag away (`--models ...`, about $1.50); see the script's header.
 
 ## Security and robustness
 
