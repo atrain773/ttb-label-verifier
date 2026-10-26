@@ -19,6 +19,8 @@ Download any label from [`samples/labels/`](samples/labels/) and enter these app
 
 Each filename says what is wrong with it (for example `04_title_case_warning`, `02_wrong_abv`). [`answer_key.json`](samples/labels/answer_key.json) lists exactly what is printed on every label.
 
+**Batch:** open **Check many labels**, choose [`samples/batch_applications.csv`](samples/batch_applications.csv), and select all 16 images. Six should fail (labels 02–07) and ten should pass.
+
 ## How it works
 
 ```
@@ -31,10 +33,22 @@ Each filename says what is wrong with it (for example `04_title_case_warning`, `
 3. **Check** (`app/matching.py`, `app/warning.py`): deterministic rules compare each field. **The AI reads; plain code decides.** That keeps the verdict fast, repeatable, unit-tested, and explainable.
 4. **Verdict** (`app/verify.py`): any Fail → **Fail**; any uncertainty or an unreadable photo → **Needs Review**; **Pass** only if every check passes.
 
+### Batch uploads
+
+For importers who submit 200–300 labels at once (`app/batch.py`):
+
+- The agent uploads all the pictures plus one CSV of application values (a [template](https://ttb-label-verifier-38lh.onrender.com/batch/template.csv) is provided). Rows are matched to pictures by filename.
+- Each picture is shrunk as it uploads, so hundreds of phone photos never sit in memory at full size.
+- Labels are checked 5 at a time in the background. The results page fills in as each one finishes, with counts at the top, and the full results download as a CSV with a reason for every problem.
+- A problem with one row (no matching picture, unreadable file, API error) marks that row "Could not check" and never stops the batch.
+
+**Measured:** 80 labels in 56 seconds with no errors (about 1.4 labels per second). A 300-label submission takes roughly 3.5 minutes, against 25–50 agent-hours by hand.
+
 ## Design decisions, and who they came from
 
 | Requirement | Source | Decision |
 |---|---|---|
+| Batch uploads for 200–300 labels | Sarah, Janet | Batch mode checks labels in parallel and streams results; one bad row never stops the batch. |
 | Results in about 5 seconds | Sarah (the last vendor took 30–40s) | Model chosen by measured latency (below). Images downscaled before sending. Single request, no chained AI calls. |
 | Usable by a 73-year-old | Sarah | Large text, high contrast, numbered steps, one button. Visible "Example:" hints instead of grey placeholder text that looks pre-filled. Errors keep what the agent typed. |
 | `STONE'S THROW` = `Stone's Throw` | Dave | Text fields ignore capitalization, apostrophe style, and punctuation. Near misses go to **Needs Review**, not Fail. |
@@ -84,7 +98,7 @@ Full report: [docs/eval_results.md](docs/eval_results.md). Re-run with `python s
 | Claude Sonnet 5.5 (Anthropic API) | Vision + structured output: returns a validated Pydantic object, not free text to parse |
 | Pydantic | One schema for the model's output, the matching code, and the tests |
 | Pillow | Image validation, EXIF rotation, downscaling |
-| pytest | 45 offline tests: rules, warning check, and routes with a fake reader (no API cost) |
+| pytest | 58 offline tests: rules, warning check, batch, and routes with a fake reader (no API cost) |
 | Render | Free hosting that deploys from `render.yaml` on every merge to `main` |
 
 ## Assumptions
@@ -101,7 +115,8 @@ Full report: [docs/eval_results.md](docs/eval_results.md). Re-run with `python s
 - **Cloud API dependency.** The reader calls Anthropic's API, which Marcus's firewall may block. The `Extractor` interface is where an in-network model would plug in.
 - **Bold detection is a judgment by the model.** When it isn't sure, the label goes to Needs Review rather than passing.
 - **Free-plan hosting** means a cold start after idle and a small CPU share. See Path to production.
-- **No batch upload yet.** It is the next planned feature (see below).
+- **Batch results live in memory.** They are kept for 2 hours, but a redeploy or the free server going to sleep clears them, so download the results CSV when a batch finishes.
+- **Batch speed is capped by the API account's rate limit.** Five labels at a time is safe for a new account; a higher limit allows more.
 - **No login.** Anyone with the URL can use the prototype, and each check spends API credit.
 
 ## Path to production
@@ -109,7 +124,7 @@ Full report: [docs/eval_results.md](docs/eval_results.md). Re-run with `python s
 - **Always-on hosting.** A paid plan (Render Starter, or Azure App Service in TTB's tenant) removes the cold start and gives image handling a full CPU.
 - **Keyless authentication.** Replace the static API key with workload identity federation (supported on Azure), so credentials rotate automatically and nothing long-lived is stored.
 - **Reach the model through approved infrastructure.** Run the model through TTB's Azure tenant, or swap in an approved in-network reader, so the firewall is not an issue.
-- **Batch processing.** Upload an importer's 200–300 labels with a CSV of application values; process them in parallel and show results as they finish. A slower, more accurate model can run here because no one is waiting on a single label.
+- **Durable batch jobs.** Move batch jobs to a queue with stored results so they survive restarts, and raise concurrency with a higher API rate limit. A slower, more accurate model could run on batches, because no one waits on a single label.
 - **Sign-in and audit trail.** Agency single sign-on, and a record of who checked what and the verdict, following TTB's retention policy.
 - **COLA integration.** Pull application values directly instead of retyping them.
 
@@ -148,12 +163,14 @@ app/
   matching.py     field comparison rules
   warning.py      government warning check
   verify.py       runs the checks, rolls up the verdict
+  batch.py        CSV parsing, row/image pairing, parallel batch runs
   models.py       shared data shapes
   templates/      HTML pages
 scripts/
   generate_labels.py   builds the test labels and answer key
   eval_extraction.py   scores models for accuracy and speed
 samples/labels/        16 test labels + answer_key.json
+samples/batch_applications.csv   application values for a 16-label batch
 docs/                  assignment brief, eval results
 tests/                 pytest suite
 ```

@@ -1,0 +1,56 @@
+{% set labels = {"pass": "Pass", "fail": "Fail", "review": "Needs review", "error": "Could not check", "waiting": "Waiting", "checking": "Checking…"} %}
+{% set icons = {"pass": "✓", "fail": "✗", "review": "?", "error": "!", "waiting": "…", "checking": "…"} %}
+{% set c = job.counts() %}
+{% set total = job.rows | length %}
+{% set finished = c.pass + c.fail + c.review + c.error %}
+
+<div data-done="{{ 'true' if job.done else 'false' }}">
+  <section class="batch-summary" role="status" aria-live="polite">
+    {% if job.done %}
+      <p class="batch-progress"><strong>All {{ total }} labels checked</strong> in {{ job.elapsed_seconds }} seconds.</p>
+    {% else %}
+      <p class="batch-progress"><strong>Checked {{ finished }} of {{ total }}</strong>… this page updates by itself.</p>
+      <progress max="{{ total }}" value="{{ finished }}">{{ finished }} of {{ total }}</progress>
+    {% endif %}
+    <ul class="batch-counts">
+      <li class="count-fail">✗ {{ c.fail }} Fail</li>
+      <li class="count-review">? {{ c.review }} Needs review</li>
+      <li class="count-pass">✓ {{ c.pass }} Pass</li>
+      {% if c.error %}<li class="count-error">! {{ c.error }} Could not check</li>{% endif %}
+    </ul>
+    {% if job.done %}
+      <p><a class="button" href="/batch/{{ job.id }}/results.csv">Download results (CSV)</a></p>
+    {% endif %}
+  </section>
+
+  <table class="fields batch-table">
+    <thead>
+      <tr><th scope="col">Label</th><th scope="col">Result</th><th scope="col">What to look at</th></tr>
+    </thead>
+    <tbody>
+      {% for row in job.rows %}
+      {% set s = row.display_status %}
+      <tr class="row-{{ s }}">
+        <th scope="row">{{ row.filename }}</th>
+        <td><span class="badge badge-{{ s }}">{{ icons[s] }} {{ labels[s] }}</span></td>
+        <td>
+          {% if row.result %}
+            {% set problems = row.result.fields | rejectattr("status.value", "equalto", "pass") | list %}
+            {% if problems %}
+              <ul class="problems">
+                {% for f in problems %}<li><strong>{{ f.field }}:</strong> {{ f.reason }}</li>{% endfor %}
+              </ul>
+            {% elif s == "review" %}
+              {{ row.result.summary }}
+            {% else %}
+              <span class="reason">All checks passed.</span>
+            {% endif %}
+          {% elif row.error %}
+            {{ row.error }}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

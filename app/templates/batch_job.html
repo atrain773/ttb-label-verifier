@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Batch results · Label Verifier{% endblock %}
+{% block content %}
+<h1>Batch results</h1>
+
+<div id="batch-table">
+  {% include "_batch_table.html" %}
+</div>
+
+<p>
+  <a class="button primary-action" href="/batch">Check another batch</a>
+</p>
+
+<script>
+  // Refresh the table every 2 seconds until every label is finished.
+  (function poll() {
+    var box = document.getElementById("batch-table");
+    if (box.querySelector("[data-done='true']")) return;
+    setTimeout(function () {
+      fetch("/batch/{{ job.id }}/table")
+        .then(function (r) { return r.ok ? r.text() : Promise.reject(r.status); })
+        .then(function (html) { box.innerHTML = html; poll(); })
+        .catch(function () { setTimeout(poll, 4000); });
+    }, 2000);
+  })();
+</script>
+{% endblock %}
