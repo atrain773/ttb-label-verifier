@@ -1,5 +1,7 @@
 # TTB Label Verifier
 
+[![Tests](https://github.com/atrain773/ttb-label-verifier/actions/workflows/tests.yml/badge.svg)](https://github.com/atrain773/ttb-label-verifier/actions/workflows/tests.yml)
+
 A prototype that helps TTB compliance agents check alcohol label artwork against the application. An agent uploads the label picture and types what the application says, and a few seconds later gets **Pass**, **Fail**, or **Needs Review**, with a plain-English reason for each field.
 
 **Live app:** https://ttb-label-verifier-38lh.onrender.com
@@ -172,7 +174,7 @@ Open http://localhost:8000.
 pytest
 ```
 
-Tests run offline with a fake label reader, so they are free and fast. The accuracy eval (`scripts/eval_extraction.py`) calls the real API.
+Tests run offline with a fake label reader, so they are free and fast. The accuracy eval (`scripts/eval_extraction.py`) calls the real API. GitHub Actions runs the suite on every pull request and on every push to `main`.
 
 ## Deploy
 
