@@ -64,3 +64,21 @@ def test_missing_header_fails():
 def test_multiple_problems_are_all_reported():
     result = check_government_warning(f"Government Warning: {REQUIRED_BODY}", header_bold=False)
     assert "capital" in result.reason and "bold" in result.reason
+
+
+def test_warning_much_smaller_than_rest_of_label_needs_review():
+    # Jenny: "burying it in tiny text". Size can't be measured in mm from a photo, so a person checks.
+    result = check_government_warning(STANDARD_WARNING, header_bold=True, much_smaller=True)
+    assert result.status == Status.REVIEW
+    assert "16.22" in result.reason
+
+
+def test_unsure_about_size_does_not_add_a_review():
+    assert check_government_warning(STANDARD_WARNING, header_bold=True, much_smaller=None).status == Status.PASS
+
+
+def test_small_and_reworded_warning_still_fails_and_mentions_size():
+    reworded = STANDARD_WARNING.replace("may cause", "can cause")
+    result = check_government_warning(reworded, header_bold=True, much_smaller=True)
+    assert result.status == Status.FAIL
+    assert "smaller" in result.reason

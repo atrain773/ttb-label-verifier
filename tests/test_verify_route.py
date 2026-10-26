@@ -17,6 +17,7 @@ GOOD_LABEL = ExtractedLabel(
     class_type="Kentucky Straight Bourbon Whiskey",
     alcohol_content="45% Alc./Vol. (90 Proof)",
     net_contents="750 mL",
+    bottler_name_address="Bottled by Old Tom Distillery, Bardstown, KY",
     government_warning_text=STANDARD_WARNING,
     warning_header_appears_bold=True,
 )
