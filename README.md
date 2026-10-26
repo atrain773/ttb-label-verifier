@@ -42,7 +42,14 @@ For importers who submit 200–300 labels at once (`app/batch.py`):
 - Labels are checked 5 at a time in the background. The results page fills in as each one finishes, with counts at the top, and the full results download as a CSV with a reason for every problem.
 - A problem with one row (no matching picture, unreadable file, API error) marks that row "Could not check" and never stops the batch.
 
-**Measured:** 80 labels in 56 seconds with no errors (about 1.4 labels per second). A 300-label submission takes roughly 3.5 minutes, against 25–50 agent-hours by hand.
+**Measured on the live app** (real API, sample labels of ~100 KB each):
+
+| Batch | Upload | Checking | Result |
+|---|---|---|---|
+| 16 labels | 8s | 10.0s | 6 Fail, 10 Pass, all correct |
+| 80 labels | 14s | 39.3s | 30 Fail, 50 Pass, 0 errors, same verdict for every copy of a label |
+
+Checking runs at about 2 labels per second, so a 300-label submission takes roughly 3–4 minutes, against 25–50 agent-hours by hand. Uploading is the slow part on the free plan, because its small CPU share resizes each image as it arrives; full-size phone photos (3–5 MB each) upload and resize more slowly than these samples.
 
 ## Design decisions, and who they came from
 
