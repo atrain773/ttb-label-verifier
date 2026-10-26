@@ -2,8 +2,70 @@
 {% block content %}
 <h1>Check an alcohol label</h1>
 <p class="lead">
-  Upload a label picture and the application details.
-  We will check that they match and tell you what to look at.
+  Upload the label picture and type in what the application says.
+  We will tell you if they match.
 </p>
-<p class="notice">This tool is being set up. Label checking is coming next.</p>
+
+{% if error %}
+<div class="alert" role="alert">
+  <strong>Something went wrong:</strong> {{ error }}
+</div>
+{% endif %}
+
+<form class="verify-form" action="/verify" method="post" enctype="multipart/form-data">
+  <fieldset>
+    <legend><span class="step">1</span> Label picture</legend>
+    <label for="label_image">Choose the label image (JPG or PNG)</label>
+    <input id="label_image" name="label_image" type="file" accept="image/*" required>
+  </fieldset>
+
+  <fieldset>
+    <legend><span class="step">2</span> What the application says</legend>
+
+    <label for="brand_name">Brand name</label>
+    <p class="example" id="brand_name_hint">Example: OLD TOM DISTILLERY</p>
+    <input id="brand_name" name="brand_name" type="text" required aria-describedby="brand_name_hint"
+           value="{{ form.brand_name or '' }}">
+
+    <label for="class_type">Class / type</label>
+    <p class="example" id="class_type_hint">Example: Kentucky Straight Bourbon Whiskey</p>
+    <input id="class_type" name="class_type" type="text" required aria-describedby="class_type_hint"
+           value="{{ form.class_type or '' }}">
+
+    <label for="alcohol_content">Alcohol content</label>
+    <p class="example" id="alcohol_content_hint">Example: 45% Alc./Vol. (90 Proof)</p>
+    <input id="alcohol_content" name="alcohol_content" type="text" required aria-describedby="alcohol_content_hint"
+           value="{{ form.alcohol_content or '' }}">
+
+    <label for="net_contents">Net contents</label>
+    <p class="example" id="net_contents_hint">Example: 750 mL</p>
+    <input id="net_contents" name="net_contents" type="text" required aria-describedby="net_contents_hint"
+           value="{{ form.net_contents or '' }}">
+
+    <details class="optional" {% if form.bottler_name_address or form.country_of_origin %}open{% endif %}>
+      <summary>More fields (optional)</summary>
+
+      <label for="bottler_name_address">Bottler name and address</label>
+      <input id="bottler_name_address" name="bottler_name_address" type="text"
+             value="{{ form.bottler_name_address or '' }}">
+
+      <label for="country_of_origin">Country of origin (imports only)</label>
+      <input id="country_of_origin" name="country_of_origin" type="text"
+             value="{{ form.country_of_origin or '' }}">
+    </details>
+  </fieldset>
+
+  <button type="submit" class="primary-action">Check this label</button>
+  <p class="hint" id="working" hidden>Checking the label. This takes a few seconds…</p>
+</form>
+
+<script>
+  // Disable the button while waiting so nobody double-submits.
+  document.querySelector(".verify-form").addEventListener("submit", function () {
+    var button = this.querySelector("button");
+    button.disabled = true;
+    button.textContent = "Checking…";
+    document.getElementById("working").hidden = false;
+  });
+</script>
 {% endblock %}

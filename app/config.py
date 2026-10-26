@@ -5,15 +5,23 @@ never requires a code change.
 """
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # Real environment variables (e.g. on Render) take precedence over the local .env file.
+    model_config = SettingsConfigDict(env_file=PROJECT_ROOT / ".env", extra="ignore")
 
     anthropic_api_key: str = ""
     extraction_model: str = "claude-opus-5-5"
+    # Lower effort = less model thinking = faster responses. Label transcription is a simple task.
+    extraction_effort: str = "low"
+    # Hard ceiling per label; the target is ~5 seconds.
+    extraction_timeout_seconds: float = 20.0
 
 
 @lru_cache
