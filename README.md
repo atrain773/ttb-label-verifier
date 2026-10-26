@@ -53,6 +53,8 @@ For importers who submit 200–300 labels at once (`app/batch.py`):
 
 Checking runs at about 2 labels per second, so a 300-label submission takes roughly 3–4 minutes, against 25–50 agent-hours by hand. Uploading is the slow part on the free plan, because its small CPU share resizes each image as it arrives; full-size phone photos (3–5 MB each) upload and resize more slowly than these samples.
 
+**Cost:** each check sends about 3,000 input tokens (mostly the image), which is about **$0.009 per label** on Sonnet 5.5, measured from the API account's usage. A 300-label batch costs about $2.70.
+
 ## Design decisions, and who they came from
 
 | Requirement | Source | Decision |
@@ -98,7 +100,7 @@ On the deployed app, the reading step takes 2.0–2.3s; end-to-end from a home c
 
 **Latency varies with API load.** A later re-run of the same labels saw a 2.9–3.1s median but occasional spikes to 9–14s. To keep an agent from waiting on a spike, a single-label read gives up after 8 seconds and retries once, and the agent sees "try again" rather than a long hang. Batch rows allow 20 seconds and more retries, because no one is waiting on a single row.
 
-Full report: [docs/eval_results.md](docs/eval_results.md). Re-run with `python scripts/eval_extraction.py` (about 150 API calls, under $1).
+Full report: [docs/eval_results.md](docs/eval_results.md). Re-run with `python scripts/eval_extraction.py` (144 API calls across three models, about $1.50).
 
 ## Security and robustness
 
@@ -124,7 +126,7 @@ An audit of the prototype (including deliberately hostile inputs) led to these p
 | Claude Sonnet 5.5 (Anthropic API) | Vision + structured output: returns a validated Pydantic object, not free text to parse |
 | Pydantic | One schema for the model's output, the matching code, and the tests |
 | Pillow | Image validation, EXIF rotation, downscaling |
-| pytest | 74 offline tests: rules, warning check, batch, hardening, and routes with a fake reader (no API cost) |
+| pytest | 75 offline tests: rules, warning check, batch, hardening, and routes with a fake reader (no API cost) |
 | Render | Free hosting that deploys from `render.yaml` on every merge to `main` |
 
 ## Assumptions
