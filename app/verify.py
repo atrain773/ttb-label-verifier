@@ -40,8 +40,14 @@ def overall_status(fields: list[FieldResult], image_legible: bool) -> Status:
     return Status.PASS
 
 
-async def verify_label(app_data: ApplicationData, image_jpeg: bytes, extractor: Extractor) -> VerificationResult:
-    started = time.perf_counter()
+async def verify_label(
+    app_data: ApplicationData,
+    image_jpeg: bytes,
+    extractor: Extractor,
+    started: float | None = None,
+) -> VerificationResult:
+    """`started` lets the caller include upload handling in the reported time the agent sees."""
+    started = started if started is not None else time.perf_counter()
     label = await extractor.extract(image_jpeg)
     fields = compare_fields(app_data, label)
     status = overall_status(fields, label.image_legible)
