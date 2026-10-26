@@ -6,10 +6,15 @@ aside): the reader's job is faithful transcription, and the matching rules decid
 what differences are acceptable.
 
 Usage:
-    python scripts/eval_extraction.py                       # all default models, 3 runs each
-    python scripts/eval_extraction.py --models claude-sonnet-5-5 --runs 1
+    # Regression check: the app's configured model only (~48 calls, about $0.45)
+    python scripts/eval_extraction.py
 
-Writes a markdown report to docs/eval_results.md.
+    # Model comparison, as published in docs/eval_results.md (~144 calls, about $1.50)
+    python scripts/eval_extraction.py --models claude-haiku-5-5 claude-sonnet-5-5 claude-opus-5-5 \
+        --report docs/eval_results.md
+
+By default the report goes to eval_report.md (git-ignored), so routine runs never
+overwrite the published comparison.
 """
 
 import argparse
@@ -31,8 +36,7 @@ from app.extraction import ClaudeExtractor  # noqa: E402
 from app.images import prepare_image  # noqa: E402
 
 LABEL_DIR = ROOT / "samples" / "labels"
-REPORT_PATH = ROOT / "docs" / "eval_results.md"
-DEFAULT_MODELS = ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"]
+REPORT_PATH = ROOT / "eval_report.md"
 TEXT_FIELDS = [
     "brand_name",
     "class_type",
@@ -132,7 +136,7 @@ def summarize(rows: list[dict], labels: dict, models: list[str]) -> str:
 
 async def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--models", nargs="+", default=DEFAULT_MODELS)
+    parser.add_argument("--models", nargs="+", default=[get_settings().extraction_model])
     parser.add_argument("--runs", type=int, default=3)
     parser.add_argument("--report", type=Path, default=REPORT_PATH, help="where to write the markdown report")
     args = parser.parse_args()
