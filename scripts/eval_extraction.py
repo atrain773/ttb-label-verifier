@@ -71,10 +71,16 @@ async def run_model(model: str, labels: dict, images: dict, runs: int, client) -
                 row["fields"] = {f: same_text(key[f], getattr(label, f)) for f in TEXT_FIELDS}
                 row["found"] = {f: getattr(label, f) for f in TEXT_FIELDS}
                 row["bold"] = label.warning_header_appears_bold
+                row["small"] = label.warning_text_much_smaller
                 row["legible"] = label.image_legible
             rows.append(row)
         print(f"  {model}: {filename} done", flush=True)
     return rows
+
+
+def small_flag_correct(expected: bool, found: bool | None) -> bool:
+    """A tiny warning must be flagged; a normal one must not be (unsure counts as not flagged)."""
+    return found is True if expected else found is not True
 
 
 def summarize(rows: list[dict], labels: dict, models: list[str]) -> str:
@@ -86,8 +92,11 @@ def summarize(rows: list[dict], labels: dict, models: list[str]) -> str:
         "Latency is the model call alone; the app adds roughly 0.1–0.2s."
     )
     out += ["", "## Summary", ""]
-    out.append("| Model | Fields exact | Warning text exact | Bold header correct | Median s | p90 s | Max s | Over 5s | Errors |")
-    out.append("|---|---|---|---|---|---|---|---|---|")
+    out.append(
+        "| Model | Fields exact | Warning text exact | Bold header correct | Small-warning flag correct "
+        "| Median s | p90 s | Max s | Over 5s | Errors |"
+    )
+    out.append("|---|---|---|---|---|---|---|---|---|---|")
 
     by_model = defaultdict(list)
     for r in rows:
@@ -100,12 +109,13 @@ def summarize(rows: list[dict], labels: dict, models: list[str]) -> str:
         field_total = sum(len(r["fields"]) for r in ok)
         warn_hits = sum(r["fields"]["government_warning_text"] for r in ok)
         bold_hits = sum(r["bold"] == labels[r["label"]]["warning_header_appears_bold"] for r in ok)
+        small_hits = sum(small_flag_correct(labels[r["label"]]["warning_text_much_smaller"], r["small"]) for r in ok)
         times = sorted(r["seconds"] for r in mrows)
         p90 = times[max(0, int(round(0.9 * len(times))) - 1)]
         over = sum(t > 5 for t in times)
         out.append(
             f"| {model} | {field_hits}/{field_total} ({100 * field_hits / max(field_total, 1):.0f}%) "
-            f"| {warn_hits}/{len(ok)} | {bold_hits}/{len(ok)} "
+            f"| {warn_hits}/{len(ok)} | {bold_hits}/{len(ok)} | {small_hits}/{len(ok)} "
             f"| {statistics.median(times):.1f} | {p90:.1f} | {times[-1]:.1f} | {over}/{len(times)} "
             f"| {len(mrows) - len(ok)} |"
         )
@@ -124,6 +134,11 @@ def summarize(rows: list[dict], labels: dict, models: list[str]) -> str:
             for f, correct in r["fields"].items():
                 if not correct:
                     misses.append(f"- {r['model']} run {r['run']} → `{f}`: {r['found'][f]!r} (expected {key[f]!r})")
+            if not small_flag_correct(key["warning_text_much_smaller"], r["small"]):
+                misses.append(
+                    f"- {r['model']} run {r['run']} → small-warning flag: {r['small']} "
+                    f"(expected {key['warning_text_much_smaller']})"
+                )
             if r["bold"] != key["warning_header_appears_bold"]:
                 misses.append(
                     f"- {r['model']} run {r['run']} → bold header: {r['bold']} (expected {key['warning_header_appears_bold']})"

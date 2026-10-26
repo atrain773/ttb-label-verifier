@@ -21,14 +21,41 @@ def compare_fields(app_data: ApplicationData, label: ExtractedLabel) -> list[Fie
         compare_abv(app_data.alcohol_content, label.alcohol_content),
         compare_net_contents(app_data.net_contents, label.net_contents),
     ]
-    # Optional on the form: only checked when the applicant supplied them.
-    if app_data.bottler_name_address.strip():
-        results.append(compare_text("Bottler name and address", app_data.bottler_name_address, label.bottler_name_address))
+    results.append(check_bottler(app_data.bottler_name_address, label.bottler_name_address))
+    # Optional on the form: only checked when the applicant supplied it.
     if app_data.country_of_origin.strip():
         results.append(compare_text("Country of origin", app_data.country_of_origin, label.country_of_origin))
     # Mandatory on every label, checked against the legal text rather than the application.
-    results.append(check_government_warning(label.government_warning_text, label.warning_header_appears_bold))
+    results.append(
+        check_government_warning(
+            label.government_warning_text,
+            label.warning_header_appears_bold,
+            label.warning_text_much_smaller,
+        )
+    )
     return results
+
+
+def check_bottler(expected: str, found: str | None) -> FieldResult:
+    """Every label must name its bottler/producer/importer, whether or not the agent typed one in."""
+    field = "Bottler name and address"
+    if expected.strip():
+        return compare_text(field, expected, found)
+    if not found:
+        return FieldResult(
+            field=field,
+            status=Status.FAIL,
+            expected="Required on every label",
+            found=None,
+            reason="The bottler or producer's name and address is required on the label but was not found.",
+        )
+    return FieldResult(
+        field=field,
+        status=Status.PASS,
+        expected="Required on every label",
+        found=found,
+        reason="Present on the label. Not entered on the form, so not compared.",
+    )
 
 
 def overall_status(fields: list[FieldResult], image_legible: bool) -> Status:

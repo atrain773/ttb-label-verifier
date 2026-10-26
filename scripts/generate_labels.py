@@ -87,6 +87,7 @@ SPECS = [
     LabelSpec("14_glare", "Bright glare across the label.", distortions=["glare"]),
     LabelSpec("15_low_resolution", "Very low resolution image.", distortions=["low_res"]),
     LabelSpec("16_dim_lighting", "Dark, low-contrast photo.", distortions=["dim"]),
+    LabelSpec("17_missing_bottler", "No bottler name and address on the label.", bottler_name_address=None),
 ]
 
 
@@ -165,6 +166,8 @@ def answer_key(spec: LabelSpec) -> dict:
         "country_of_origin": spec.country_of_origin,
         "government_warning_text": spec.government_warning_text,
         "warning_header_appears_bold": data["warning_header_bold"],
+        # The standard warning is 22px against 26px for the bottler line; 12px is "much smaller".
+        "warning_text_much_smaller": spec.warning_font_size <= 14,
     }
 
 

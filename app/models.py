@@ -69,6 +69,13 @@ class ExtractedLabel(BaseModel):
         default=None,
         description="Whether the words 'GOVERNMENT WARNING:' appear in bold type. None if unsure.",
     )
+    warning_text_much_smaller: bool | None = Field(
+        default=None,
+        description=(
+            "True if the warning statement is printed much smaller than the label's other small print "
+            "(such as the bottler line) or is hard to read; False if comparable; None if unsure."
+        ),
+    )
     notes: str | None = Field(
         default=None,
         description="Short note about anything that made the label hard to read.",

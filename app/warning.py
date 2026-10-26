@@ -49,7 +49,11 @@ def describe_difference(expected: str, found: str) -> str:
     return listed + (f" ({extra} more difference{'s' if extra > 1 else ''}.)" if extra > 0 else "")
 
 
-def check_government_warning(text: str | None, header_bold: bool | None) -> FieldResult:
+def check_government_warning(
+    text: str | None,
+    header_bold: bool | None,
+    much_smaller: bool | None = None,
+) -> FieldResult:
     if not text:
         return FieldResult(
             field=FIELD,
@@ -81,6 +85,14 @@ def check_government_warning(text: str | None, header_bold: bool | None) -> Fiel
         problems.append('"GOVERNMENT WARNING:" must be in bold type.')
     elif header_bold is None:
         needs_review.append('Could not confirm that "GOVERNMENT WARNING:" is bold. Please check by eye.')
+
+    # Type size: millimetres can't be measured reliably from a photo, so a warning that looks
+    # much smaller than the rest of the label goes to a person rather than passing or failing.
+    if much_smaller:
+        needs_review.append(
+            "The warning text looks much smaller than the rest of the label. "
+            "Check it meets the minimum type size for this container (27 CFR 16.22)."
+        )
 
     if problems:
         status, reasons = Status.FAIL, problems + needs_review

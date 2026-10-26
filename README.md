@@ -15,13 +15,13 @@ Download any label from [`samples/labels/`](samples/labels/) and enter these app
 
 | Labels | Brand name | Class / type | Alcohol content | Net contents |
 |---|---|---|---|---|
-| `01`–`07`, `09`, `10`, `12`–`16` | Old Tom Distillery | Kentucky Straight Bourbon Whiskey | 45% | 750 mL |
+| `01`–`07`, `09`, `10`, `12`–`17` | Old Tom Distillery | Kentucky Straight Bourbon Whiskey | 45% | 750 mL |
 | `08_stones_throw` | Stone's Throw | London Dry Gin | 47% | 750 mL |
 | `11_import_wine` | Château Belle Rive | Bordeaux Red Wine | 13.5% | 750 mL |
 
 Each filename says what is wrong with it (for example `04_title_case_warning`, `02_wrong_abv`). [`answer_key.json`](samples/labels/answer_key.json) lists exactly what is printed on every label.
 
-**Batch:** open **Check many labels**, choose [`samples/batch_applications.csv`](samples/batch_applications.csv), and select all 16 images. Six should fail (labels 02–07) and ten should pass.
+**Batch:** open **Check many labels**, choose [`samples/batch_applications.csv`](samples/batch_applications.csv), and select all 17 images. Seven should fail (labels 02–07 and 17), one needs review (10, tiny warning text), and nine should pass.
 
 ## How it works
 
@@ -64,6 +64,8 @@ Checking runs at about 2 labels per second, so a 300-label submission takes roug
 | Usable by a 73-year-old | Sarah | Large text, high contrast, numbered steps, one button. Visible "Example:" hints instead of grey placeholder text that looks pre-filled. Errors keep what the agent typed. |
 | `STONE'S THROW` = `Stone's Throw` | Dave | Text fields ignore capitalization, apostrophe style, and punctuation. Near misses go to **Needs Review**, not Fail. |
 | Warning must be exact, header in bold capitals | Jenny | The warning is checked word for word against 27 CFR 16.21. Title case or a non-bold header fails. Failures name each changed phrase so the agent can paste it into a rejection. |
+| "Burying it in tiny text" | Jenny | Type size in millimetres can't be measured reliably from a photo, so the reader judges whether the warning is much smaller than the label's other small print. If so → **Needs Review**, pointing the agent to the minimum type sizes in 27 CFR 16.22. |
+| Name and address of bottler is mandatory | Brief (TTB elements) | Every label must show one. If it's missing → **Fail**, even when the agent left that field blank on the form. |
 | Handle imperfect photos | Jenny | The reader reports when a photo is hard to read, and the verdict becomes **Needs Review** instead of guessing. Tested on blur, glare, rotation, low resolution, and dim lighting. |
 | Outbound traffic is restricted | Marcus | The reader sits behind an `Extractor` interface. Swapping in an Azure-hosted model or local OCR changes one class, not the rules or UI. |
 | No sensitive data stored | Marcus | Stateless: no database, nothing written to disk. |
@@ -75,16 +77,17 @@ Checking runs at about 2 labels per second, so a 300-label submission takes roug
 
 | Field | Rule |
 |---|---|
-| Brand, class/type, bottler, country of origin | Equal after ignoring case and punctuation → Pass. ≥85% similar or one contains the other → Needs Review. Otherwise Fail. Bottler and country are only checked if entered. |
+| Brand, class/type, bottler, country of origin | Equal after ignoring case and punctuation → Pass. ≥85% similar or one contains the other → Needs Review. Otherwise Fail. Country is only checked if entered. |
+| Bottler presence | Required on every label: missing → Fail. If not entered on the form, its presence is confirmed but not compared. |
 | Alcohol content | Compared as a number (`45%` = `45% Alc./Vol. (90 Proof)`). If the label shows proof, it must be 2× ABV. |
 | Net contents | Converted to millilitres: `750 mL` = `75 cL` = `25.4 fl oz` (within 0.5%). |
-| Government warning | Exact statutory wording (line breaks ignored), `GOVERNMENT WARNING:` in capitals, header bold. If boldness can't be determined → Needs Review. |
+| Government warning | Exact statutory wording (line breaks ignored), `GOVERNMENT WARNING:` in capitals, header bold. If boldness can't be determined, or the warning looks much smaller than the rest of the label → Needs Review. |
 
 ## Accuracy and model choice
 
 The vision model only **reads** the label. So the question for model choice is how faithfully and how fast it transcribes.
 
-We measured this with an evaluation set: 16 generated labels with a known answer key (`scripts/generate_labels.py`). They include compliance defects (wrong ABV, proof ≠ 2× ABV, title-case warning, non-bold warning header, reworded warning, missing net contents) and photo defects (blur, rotation, glare, low resolution, dim lighting). Each model read every label 3 times:
+We measured this with an evaluation set: generated labels with a known answer key (`scripts/generate_labels.py`). They include compliance defects (wrong ABV, proof ≠ 2× ABV, title-case warning, non-bold warning header, reworded warning, missing net contents) and photo defects (blur, rotation, glare, low resolution, dim lighting). Each model read every label 3 times:
 
 | Model | Fields read exactly | Bold header correct | Median | Slowest | Over 5s |
 |---|---|---|---|---|---|
@@ -96,11 +99,13 @@ We measured this with an evaluation set: 16 generated labels with a known answer
 - **Opus** was as accurate as Sonnet but broke the 5-second requirement on some runs.
 - **Sonnet** was the only model with no misses and no run over 5 seconds.
 
+A later Sonnet run added two checks: a 17th label with no bottler statement, and whether the warning text looks much smaller than the rest of the label. Sonnet read all 17 labels exactly (357/357 fields), **flagged the tiny warning 3/3 times, and never flagged a normal one (48/48)**.
+
 On the deployed app, the reading step takes 2.0–2.3s; end-to-end from a home connection was 2.5–4.6s in testing, with the difference being upload time and the free plan's small CPU share.
 
 **Latency varies with API load.** A later re-run of the same labels saw a 2.9–3.1s median but occasional spikes to 9–14s. To keep an agent from waiting on a spike, a single-label read gives up after 8 seconds and retries once, and the agent sees "try again" rather than a long hang. Batch rows allow 20 seconds and more retries, because no one is waiting on a single row.
 
-Full report: [docs/eval_results.md](docs/eval_results.md). To check for regressions, run `python scripts/eval_extraction.py`, which tests only the app's model (48 calls, about $0.45). Re-running the three-model comparison is one flag away (`--models ...`, about $1.50); see the script's header.
+Full report: [docs/eval_results.md](docs/eval_results.md). To check for regressions, run `python scripts/eval_extraction.py`, which tests only the app's model (51 calls, about $0.45). Re-running the three-model comparison is one flag away (`--models ...`, about $1.50); see the script's header.
 
 ## Security and robustness
 
@@ -126,7 +131,7 @@ An audit of the prototype (including deliberately hostile inputs) led to these p
 | Claude Sonnet 5.5 (Anthropic API) | Vision + structured output: returns a validated Pydantic object, not free text to parse |
 | Pydantic | One schema for the model's output, the matching code, and the tests |
 | Pillow | Image validation, EXIF rotation, downscaling |
-| pytest | 75 offline tests: rules, warning check, batch, hardening, and routes with a fake reader (no API cost) |
+| pytest | 81 offline tests: rules, warning check, batch, hardening, and routes with a fake reader (no API cost) |
 | Render | Free hosting that deploys from `render.yaml` on every merge to `main` |
 
 ## Assumptions
@@ -198,8 +203,8 @@ app/
 scripts/
   generate_labels.py   builds the test labels and answer key
   eval_extraction.py   scores models for accuracy and speed
-samples/labels/        16 test labels + answer_key.json
-samples/batch_applications.csv   application values for a 16-label batch
+samples/labels/        17 test labels + answer_key.json
+samples/batch_applications.csv   application values for a 17-label batch
 docs/                  assignment brief, eval results
 tests/                 pytest suite
 ```
